@@ -14,6 +14,11 @@ import { getAssistantImageFromStorage } from "@/db/storage/assistant-images"
 import { getToolWorkspacesByWorkspaceId } from "@/db/tools"
 import { getWorkspaceById } from "@/db/workspaces"
 import { convertBlobToBase64 } from "@/lib/blob-to-b64"
+import { isConnect6PocMode } from "@/lib/connect6/env"
+import {
+  CONNECT6_POLICYBUDDY_MODEL_ID,
+  createConnect6PocWorkspace
+} from "@/lib/connect6/poc-mocks"
 import { supabase } from "@/lib/supabase/browser-client"
 import { LLMID } from "@/types"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
@@ -61,6 +66,11 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
 
   useEffect(() => {
     ;(async () => {
+      if (isConnect6PocMode()) {
+        await fetchWorkspaceData(workspaceId)
+        return
+      }
+
       const session = (await supabase.auth.getSession()).data.session
 
       if (!session) {
@@ -90,6 +100,35 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
 
   const fetchWorkspaceData = async (workspaceId: string) => {
     setLoading(true)
+
+    if (isConnect6PocMode()) {
+      const workspace = createConnect6PocWorkspace(workspaceId)
+      setSelectedWorkspace(workspace)
+      setAssistants([])
+      setAssistantImages([])
+      setChats([])
+      setCollections([])
+      setFolders([])
+      setFiles([])
+      setPresets([])
+      setPrompts([])
+      setTools([])
+      setModels([])
+      setChatSettings({
+        model: (searchParams.get("model") ||
+          CONNECT6_POLICYBUDDY_MODEL_ID) as LLMID,
+        prompt: workspace.default_prompt || "You are a helpful assistant.",
+        temperature: workspace.default_temperature || 0.5,
+        contextLength: workspace.default_context_length || 4096,
+        includeProfileContext: workspace.include_profile_context || false,
+        includeWorkspaceInstructions:
+          workspace.include_workspace_instructions || false,
+        embeddingsProvider:
+          (workspace.embeddings_provider as "openai" | "local") || "openai"
+      })
+      setLoading(false)
+      return
+    }
 
     const workspace = await getWorkspaceById(workspaceId)
     setSelectedWorkspace(workspace)
@@ -158,8 +197,7 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
 
     setChatSettings({
       model: (searchParams.get("model") ||
-        workspace?.default_model ||
-        "gpt-4-1106-preview") as LLMID,
+        CONNECT6_POLICYBUDDY_MODEL_ID) as LLMID,
       prompt:
         workspace?.default_prompt ||
         "You are a friendly, helpful AI assistant.",

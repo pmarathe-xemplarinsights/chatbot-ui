@@ -19,11 +19,18 @@ import {
   ChatMessage,
   ChatSettings,
   LLM,
+  LLMID,
   MessageImage,
   OpenRouterLLM,
   WorkspaceImage
 } from "@/types"
 import { AssistantImage } from "@/types/images/assistant-image"
+import { isConnect6PocMode } from "@/lib/connect6/env"
+import {
+  CONNECT6_POLICYBUDDY_LLM,
+  CONNECT6_POLICYBUDDY_MODEL_ID,
+  createConnect6PocProfile
+} from "@/lib/connect6/poc-mocks"
 import { VALID_ENV_KEYS } from "@/types/valid-keys"
 import { useRouter } from "next/navigation"
 import { FC, useEffect, useState } from "react"
@@ -76,15 +83,15 @@ export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
   // PASSIVE CHAT STORE
   const [userInput, setUserInput] = useState<string>("")
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
-  const [chatSettings, setChatSettings] = useState<ChatSettings>({
-    model: "gpt-4-turbo-preview",
+  const [chatSettings, setChatSettings] = useState<ChatSettings>(() => ({
+    model: CONNECT6_POLICYBUDDY_MODEL_ID as LLMID,
     prompt: "You are a helpful AI assistant.",
     temperature: 0.5,
     contextLength: 4000,
     includeProfileContext: true,
     includeWorkspaceInstructions: true,
     embeddingsProvider: "openai"
-  })
+  }))
   const [selectedChat, setSelectedChat] = useState<Tables<"chats"> | null>(null)
   const [chatFileItems, setChatFileItems] = useState<Tables<"file_items">[]>([])
 
@@ -125,6 +132,24 @@ export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
 
   useEffect(() => {
     ;(async () => {
+      if (isConnect6PocMode()) {
+        setProfile(createConnect6PocProfile())
+        setAvailableHostedModels([CONNECT6_POLICYBUDDY_LLM])
+        setEnvKeyMap({})
+        setChatSettings(prev => ({
+          ...prev,
+          model: CONNECT6_POLICYBUDDY_LLM.modelId,
+          includeProfileContext: false,
+          includeWorkspaceInstructions: false
+        }))
+        if (typeof window !== "undefined") {
+          console.info(
+            "[Connect6 POC] GlobalState: hosted models limited to PolicyBuddy (Connect6). Chat requests use generate-token + create-chat-session + v6/chatbot_websocket — set NEXT_PUBLIC_CONNECT6_ACCESS_KEY / SECRET_KEY."
+          )
+        }
+        return
+      }
+
       const profile = await fetchStartingData()
       let hostedModelRes: Awaited<ReturnType<typeof fetchHostedModels>>
 
@@ -136,9 +161,11 @@ export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
         setAvailableHostedModels(hostedModelRes.hostedModels)
 
         setChatSettings(prevChatSettings => {
-          const currentModelIsAvailable = hostedModelRes!.hostedModels.some(
-            model => model.modelId === prevChatSettings.model
-          )
+          const currentModelIsAvailable =
+            prevChatSettings.model === CONNECT6_POLICYBUDDY_MODEL_ID ||
+            hostedModelRes!.hostedModels.some(
+              model => model.modelId === prevChatSettings.model
+            )
 
           if (
             hostedModelRes!.hostedModels.length > 0 &&
@@ -164,10 +191,13 @@ export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
 
           setChatSettings(prevChatSettings => {
             const currentModelIsAvailable =
+              prevChatSettings.model === CONNECT6_POLICYBUDDY_MODEL_ID ||
               hostedModelRes!.hostedModels.some(
                 model => model.modelId === prevChatSettings.model
               ) ||
-              openRouterModels.some(model => model.modelId === prevChatSettings.model)
+              openRouterModels.some(
+                model => model.modelId === prevChatSettings.model
+              )
 
             if (
               hostedModelRes!.hostedModels.length === 0 &&
@@ -192,6 +222,7 @@ export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
 
         setChatSettings(prevChatSettings => {
           const currentModelIsAvailable =
+            prevChatSettings.model === CONNECT6_POLICYBUDDY_MODEL_ID ||
             hostedModelRes?.hostedModels.some(
               model => model.modelId === prevChatSettings.model
             ) ||

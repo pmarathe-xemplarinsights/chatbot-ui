@@ -1,4 +1,5 @@
 import { ChatbotUIContext } from "@/context/context"
+import { CONNECT6_POLICYBUDDY_LLM } from "@/lib/connect6/poc-mocks"
 import { CHAT_SETTING_LIMITS } from "@/lib/chat-setting-limits"
 import useHotkey from "@/lib/hooks/use-hotkey"
 import { LLMID, ModelProvider } from "@/types"
@@ -48,7 +49,7 @@ export const ChatSettings: FC<ChatSettingsProps> = ({}) => {
 
   if (!chatSettings) return null
 
-  const allModels = [
+  const customAndHosted = [
     ...models.map(model => ({
       modelId: model.model_id as LLMID,
       modelName: model.name,
@@ -60,7 +61,9 @@ export const ChatSettings: FC<ChatSettingsProps> = ({}) => {
     ...availableHostedModels,
     ...availableLocalModels,
     ...availableOpenRouterModels
-  ]
+  ].filter(m => m.modelId !== CONNECT6_POLICYBUDDY_LLM.modelId)
+
+  const allModels = [CONNECT6_POLICYBUDDY_LLM, ...customAndHosted]
 
   const fullModel = allModels.find(llm => llm.modelId === chatSettings.model)
 

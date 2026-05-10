@@ -1,5 +1,7 @@
 import { ModelProvider } from "."
 
+export type Connect6LLMID = "connect6-policybuddy"
+
 export type LLMID =
   | OpenAILLMID
   | GoogleLLMID
@@ -7,6 +9,7 @@ export type LLMID =
   | MistralLLMID
   | GroqLLMID
   | PerplexityLLMID
+  | Connect6LLMID
 
 // OpenAI Models (UPDATED 5/13/24)
 export type OpenAILLMID =

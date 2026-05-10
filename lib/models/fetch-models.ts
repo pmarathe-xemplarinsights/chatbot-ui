@@ -1,3 +1,5 @@
+import { getConnect6AccessKey, getConnect6SecretKey } from "@/lib/connect6/env"
+import { CONNECT6_POLICYBUDDY_LLM } from "@/lib/connect6/poc-mocks"
 import { Tables } from "@/supabase/types"
 import { LLM, LLMID, OpenRouterLLM } from "@/types"
 import { toast } from "sonner"
@@ -41,6 +43,23 @@ export const fetchHostedModels = async (profile: Tables<"profiles">) => {
           modelsToAdd.push(...models)
         }
       }
+    }
+
+    let connect6Available =
+      Boolean(getConnect6AccessKey()) && Boolean(getConnect6SecretKey())
+    if (!connect6Available) {
+      try {
+        const st = await fetch("/api/connect6/status")
+        if (st.ok) {
+          const j = (await st.json()) as { configured?: boolean }
+          connect6Available = j.configured === true
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+    if (connect6Available) {
+      modelsToAdd.push(CONNECT6_POLICYBUDDY_LLM)
     }
 
     return {

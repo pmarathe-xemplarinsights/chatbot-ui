@@ -32,41 +32,41 @@ export default async function Login({
       }
     }
   )
-const {
-  data: { session }
-} = await supabase.auth.getSession()
+  const {
+    data: { session }
+  } = await supabase.auth.getSession()
 
-if (session) {
-  const user = session.user
+  if (session) {
+    const user = session.user
 
-  const homeWorkspaceId = await getHomeWorkspaceByUserId(user.id, supabase, {
-    throwIfMissing: false
-  })
+    const homeWorkspaceId = await getHomeWorkspaceByUserId(user.id, supabase, {
+      throwIfMissing: false
+    })
 
-  if (!homeWorkspaceId) {
-    const newWorkspace = await createWorkspace(
-      {
-        name: "My Workspace",
-        user_id: user.id,
-        is_home: true,
-        default_model: "gpt-4",
-        default_context_length: 4096,
-        default_prompt: "",
-        default_temperature: 1,
-        description: "",
-        embeddings_provider: "openai",
-        include_profile_context: false,
-        include_workspace_instructions: false,
-        instructions: ""
-      },
-      supabase
-    )
+    if (!homeWorkspaceId) {
+      const newWorkspace = await createWorkspace(
+        {
+          name: "My Workspace",
+          user_id: user.id,
+          is_home: true,
+          default_model: "gpt-4",
+          default_context_length: 4096,
+          default_prompt: "",
+          default_temperature: 1,
+          description: "",
+          embeddings_provider: "openai",
+          include_profile_context: false,
+          include_workspace_instructions: false,
+          instructions: ""
+        },
+        supabase
+      )
 
-    return redirect(`/${newWorkspace.id}/chat`)
+      return redirect(`/${newWorkspace.id}/chat`)
+    }
+
+    return redirect(`/${homeWorkspaceId}/chat`)
   }
-
-  return redirect(`/${homeWorkspaceId}/chat`)
-}
   const signIn = async (formData: FormData) => {
     "use server"
 
@@ -84,9 +84,13 @@ if (session) {
       return redirect(`/login?message=${error.message}`)
     }
 
-    let homeWorkspaceId = await getHomeWorkspaceByUserId(data.user.id, supabase, {
-      throwIfMissing: false
-    })
+    let homeWorkspaceId = await getHomeWorkspaceByUserId(
+      data.user.id,
+      supabase,
+      {
+        throwIfMissing: false
+      }
+    )
 
     if (!homeWorkspaceId) {
       const newWorkspace = await createWorkspace(

@@ -3,7 +3,11 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 })
 
 const withPWA = require("next-pwa")({
-  dest: "public"
+  dest: "public",
+  // Dev: avoid running Workbox/GenerateSW on every webpack rebuild — it runs multiple
+  // times in watch mode and can leave server chunks (e.g. ./72.js) out of sync with
+  // webpack-runtime.js (missing module errors on /api/* and RSC).
+  disable: process.env.NODE_ENV === "development"
 })
 
 module.exports = withBundleAnalyzer(
@@ -27,6 +31,15 @@ module.exports = withBundleAnalyzer(
     },
     experimental: {
       serverComponentsExternalPackages: ["sharp", "onnxruntime-node"]
+    },
+    // next-pwa triggers multiple server compilations; async chunks can end up under
+    // `.next/server/chunks/` while webpack-runtime still does `require("./72.js")`
+    // from `.next/server/`, causing MODULE_NOT_FOUND during `next build` / collect.
+    webpack: (config, { isServer }) => {
+      if (isServer && config.optimization) {
+        config.optimization.splitChunks = false
+      }
+      return config
     }
   })
 )

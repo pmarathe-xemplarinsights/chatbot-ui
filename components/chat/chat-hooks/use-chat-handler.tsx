@@ -13,6 +13,16 @@ import { useRouter } from "next/navigation"
 import { useContext, useEffect, useRef } from "react"
 import { LLM_LIST } from "../../../lib/models/llm/llm-list"
 import {
+  handleConnect6Chat,
+  resetConnect6Connection
+} from "@/lib/connect6/connect6-chat"
+import { isConnect6PocMode } from "@/lib/connect6/env"
+import { resetConnect6BrowserSession } from "@/lib/connect6/session-storage"
+import {
+  CONNECT6_POLICYBUDDY_LLM,
+  CONNECT6_POLICYBUDDY_MODEL_ID
+} from "@/lib/connect6/poc-mocks"
+import {
   createTempMessages,
   handleCreateChat,
   handleCreateMessages,
@@ -80,6 +90,9 @@ export const useChatHandler = () => {
 
   const handleNewChat = async () => {
     if (!selectedWorkspace) return
+
+    resetConnect6Connection()
+    resetConnect6BrowserSession()
 
     setUserInput("")
     setChatMessages([])
@@ -206,22 +219,47 @@ export const useChatHandler = () => {
       const newAbortController = new AbortController()
       setAbortController(newAbortController)
 
-      const modelData = [
-        ...models.map(model => ({
-          modelId: model.model_id as LLMID,
-          modelName: model.name,
-          provider: "custom" as ModelProvider,
-          hostedId: model.id,
-          platformLink: "",
-          imageInput: false
-        })),
-        ...LLM_LIST,
-        ...availableLocalModels,
-        ...availableOpenRouterModels
-      ].find(llm => llm.modelId === chatSettings?.model)
+      const connect6Poc = isConnect6PocMode()
+      const settingsForRequest =
+        connect6Poc && chatSettings
+          ? {
+              ...chatSettings,
+              model: CONNECT6_POLICYBUDDY_MODEL_ID as LLMID
+            }
+          : chatSettings!
+
+      if (typeof window !== "undefined") {
+        console.info("[chat-route]", {
+          connect6Poc,
+          uiModel: chatSettings?.model,
+          forcedModelForRequest: settingsForRequest.model,
+          note: connect6Poc
+            ? "POC: requests must use Connect6 only (see [Connect6] logs); not /api/chat/*"
+            : "Using normal model routing"
+        })
+      }
+
+      const modelData =
+        [
+          ...models.map(model => ({
+            modelId: model.model_id as LLMID,
+            modelName: model.name,
+            provider: "custom" as ModelProvider,
+            hostedId: model.id,
+            platformLink: "",
+            imageInput: false
+          })),
+          ...LLM_LIST,
+          ...availableLocalModels,
+          ...availableOpenRouterModels
+        ].find(llm => llm.modelId === settingsForRequest.model) ??
+        (settingsForRequest.model === CONNECT6_POLICYBUDDY_MODEL_ID ||
+        connect6Poc
+          ? CONNECT6_POLICYBUDDY_LLM
+          : undefined)
 
       validateChatSettings(
-        chatSettings,
+        settingsForRequest,
         modelData,
         profile,
         selectedWorkspace,
@@ -244,7 +282,7 @@ export const useChatHandler = () => {
           userInput,
           newMessageFiles,
           chatFiles,
-          chatSettings!.embeddingsProvider,
+          settingsForRequest.embeddingsProvider,
           sourceCount
         )
       }
@@ -253,7 +291,7 @@ export const useChatHandler = () => {
         createTempMessages(
           messageContent,
           chatMessages,
-          chatSettings!,
+          settingsForRequest,
           b64Images,
           isRegeneration,
           setChatMessages,
@@ -261,7 +299,7 @@ export const useChatHandler = () => {
         )
 
       let payload: ChatPayload = {
-        chatSettings: chatSettings!,
+        chatSettings: settingsForRequest,
         workspaceInstructions: selectedWorkspace!.instructions || "",
         chatMessages: isRegeneration
           ? [...chatMessages]
@@ -273,7 +311,22 @@ export const useChatHandler = () => {
 
       let generatedText = ""
 
-      if (selectedTools.length > 0) {
+      const useConnect6ChatPath =
+        connect6Poc || modelData!.provider === "connect6"
+      const connect6Selected = modelData!.provider === "connect6"
+
+      if (typeof window !== "undefined") {
+        console.info("[chat-route] backend branch:", {
+          useConnect6ChatPath,
+          provider: modelData!.provider,
+          willCallHostedChatApi:
+            !useConnect6ChatPath && selectedTools.length === 0,
+          toolsSkippedForConnect6:
+            connect6Selected && selectedTools.length > 0 ? true : false
+        })
+      }
+
+      if (selectedTools.length > 0 && !connect6Poc && !connect6Selected) {
         setToolInUse("Tools")
 
         const formattedMessages = await buildFinalMessages(
@@ -308,11 +361,28 @@ export const useChatHandler = () => {
           setToolInUse
         )
       } else {
-        if (modelData!.provider === "ollama") {
+        if (useConnect6ChatPath) {
+          if (typeof window !== "undefined") {
+            console.info(
+              "[chat-route] invoking Connect6 handleConnect6Chat — not fetch(/api/chat/…)"
+            )
+          }
+          generatedText = await handleConnect6Chat(
+            messageContent,
+            tempAssistantChatMessage,
+            newAbortController,
+            setFirstTokenReceived,
+            setChatMessages,
+            setToolInUse
+          )
+        } else if (modelData!.provider === "ollama") {
+          if (typeof window !== "undefined") {
+            console.info("[chat-route] invoking local Ollama (not Connect6)")
+          }
           generatedText = await handleLocalChat(
             payload,
             profile!,
-            chatSettings!,
+            settingsForRequest,
             tempAssistantChatMessage,
             isRegeneration,
             newAbortController,
@@ -322,6 +392,12 @@ export const useChatHandler = () => {
             setToolInUse
           )
         } else {
+          if (typeof window !== "undefined") {
+            console.info(
+              "[chat-route] invoking hosted chat → fetch(/api/chat/<provider>) provider=",
+              modelData!.provider
+            )
+          }
           generatedText = await handleHostedChat(
             payload,
             profile!,
@@ -339,47 +415,61 @@ export const useChatHandler = () => {
         }
       }
 
-      if (!currentChat) {
-        currentChat = await handleCreateChat(
-          chatSettings!,
-          profile!,
-          selectedWorkspace!,
-          messageContent,
-          selectedAssistant!,
-          newMessageFiles,
-          setSelectedChat,
-          setChats,
-          setChatFiles
+      const skipSupabasePersistence = useConnect6ChatPath && connect6Poc
+
+      if (
+        connect6Selected &&
+        selectedTools.length > 0 &&
+        typeof window !== "undefined"
+      ) {
+        console.warn(
+          "[chat-route] Connect6 model: ignoring tools; replies use Connect6 WebSocket only"
         )
-      } else {
-        const updatedChat = await updateChat(currentChat.id, {
-          updated_at: new Date().toISOString()
-        })
-
-        setChats(prevChats => {
-          const updatedChats = prevChats.map(prevChat =>
-            prevChat.id === updatedChat.id ? updatedChat : prevChat
-          )
-
-          return updatedChats
-        })
       }
 
-      await handleCreateMessages(
-        chatMessages,
-        currentChat,
-        profile!,
-        modelData!,
-        messageContent,
-        generatedText,
-        newMessageImages,
-        isRegeneration,
-        retrievedFileItems,
-        setChatMessages,
-        setChatFileItems,
-        setChatImages,
-        selectedAssistant
-      )
+      if (!skipSupabasePersistence) {
+        if (!currentChat) {
+          currentChat = await handleCreateChat(
+            settingsForRequest,
+            profile!,
+            selectedWorkspace!,
+            messageContent,
+            selectedAssistant!,
+            newMessageFiles,
+            setSelectedChat,
+            setChats,
+            setChatFiles
+          )
+        } else {
+          const updatedChat = await updateChat(currentChat.id, {
+            updated_at: new Date().toISOString()
+          })
+
+          setChats(prevChats => {
+            const updatedChats = prevChats.map(prevChat =>
+              prevChat.id === updatedChat.id ? updatedChat : prevChat
+            )
+
+            return updatedChats
+          })
+        }
+
+        await handleCreateMessages(
+          chatMessages,
+          currentChat,
+          profile!,
+          modelData!,
+          messageContent,
+          generatedText,
+          newMessageImages,
+          isRegeneration,
+          retrievedFileItems,
+          setChatMessages,
+          setChatFileItems,
+          setChatImages,
+          selectedAssistant
+        )
+      }
 
       setIsGenerating(false)
       setFirstTokenReceived(false)

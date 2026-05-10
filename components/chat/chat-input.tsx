@@ -77,7 +77,12 @@ export const ChatInput: FC<ChatInputProps> = ({}) => {
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const canSend = !!userInput && !!profile && !!selectedWorkspace && !!chatSettings && !isGenerating
+  const canSend =
+    !!userInput &&
+    !!profile &&
+    !!selectedWorkspace &&
+    !!chatSettings &&
+    !isGenerating
 
   useEffect(() => {
     setTimeout(() => {
@@ -91,7 +96,9 @@ export const ChatInput: FC<ChatInputProps> = ({}) => {
       setIsPromptPickerOpen(false)
 
       if (!profile || !selectedWorkspace) {
-        toast.error("Still loading your profile or workspace. Please wait a moment.")
+        toast.error(
+          "Still loading your profile or workspace. Please wait a moment."
+        )
         return
       }
 
@@ -284,7 +291,9 @@ export const ChatInput: FC<ChatInputProps> = ({}) => {
               onClick={() => {
                 if (!canSend) {
                   if (!profile || !selectedWorkspace) {
-                    toast.error("Still loading your profile or workspace. Please wait a moment.")
+                    toast.error(
+                      "Still loading your profile or workspace. Please wait a moment."
+                    )
                   }
                   return
                 }
@@ -294,7 +303,10 @@ export const ChatInput: FC<ChatInputProps> = ({}) => {
               aria-label="Send message"
               disabled={!canSend}
             >
-              <IconSend className="bg-primary text-secondary rounded p-1" size={30} />
+              <IconSend
+                className="bg-primary text-secondary rounded p-1"
+                size={30}
+              />
             </button>
           )}
         </div>

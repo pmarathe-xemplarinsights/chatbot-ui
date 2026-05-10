@@ -13,6 +13,8 @@ import { LLMID, MessageImage } from "@/types"
 import { useParams } from "next/navigation"
 import { FC, useContext, useEffect, useState } from "react"
 import { ChatHelp } from "./chat-help"
+import { ChatSettings } from "./chat-settings"
+import { QuickSettings } from "./quick-settings"
 import { useScroll } from "./chat-hooks/use-scroll"
 import { ChatInput } from "./chat-input"
 import { ChatMessages } from "./chat-messages"
@@ -187,6 +189,14 @@ export const ChatUI: FC<ChatUIProps> = ({}) => {
 
   return (
     <div className="relative flex h-full flex-col items-center">
+      <div className="absolute left-2 top-2 z-20">
+        <QuickSettings />
+      </div>
+
+      <div className="absolute right-2 top-2 z-20">
+        <ChatSettings />
+      </div>
+
       <div className="absolute left-4 top-2.5 flex justify-center">
         <ChatScrollButtons
           isAtTop={isAtTop}

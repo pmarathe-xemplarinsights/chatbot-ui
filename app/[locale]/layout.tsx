@@ -8,7 +8,8 @@ import { createServerClient } from "@supabase/ssr"
 import { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import { cookies } from "next/headers"
-import { ReactNode } from "react"
+import { ReactNode, Suspense } from "react"
+import Loading from "./loading"
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -83,6 +84,7 @@ export default async function RootLayout({
     }
   )
   const session = (await supabase.auth.getSession()).data.session
+  const connect6Poc = process.env.NEXT_PUBLIC_CONNECT6_POC_MODE === "true"
 
   const { t, resources } = await initTranslations(locale, i18nNamespaces)
 
@@ -97,7 +99,13 @@ export default async function RootLayout({
           >
             <Toaster richColors position="top-center" duration={3000} />
             <div className="bg-background text-foreground flex h-dvh flex-col items-center overflow-x-auto">
-              {session ? <GlobalState>{children}</GlobalState> : children}
+              <Suspense fallback={<Loading />}>
+                {session || connect6Poc ? (
+                  <GlobalState>{children}</GlobalState>
+                ) : (
+                  children
+                )}
+              </Suspense>
             </div>
           </TranslationsProvider>
         </Providers>

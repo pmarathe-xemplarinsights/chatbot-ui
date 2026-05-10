@@ -1,11 +1,10 @@
 import { checkApiKey, getServerProfile } from "@/lib/server/server-chat-helpers"
 import { ChatSettings } from "@/types"
 import { OpenAIStream, StreamingTextResponse } from "ai"
-import { ServerRuntime } from "next"
 import OpenAI from "openai"
 import { ChatCompletionCreateParamsBase } from "openai/resources/chat/completions.mjs"
 
-export const runtime: ServerRuntime = "edge"
+export const runtime = "edge"
 
 export async function POST(request: Request) {
   const json = await request.json()
