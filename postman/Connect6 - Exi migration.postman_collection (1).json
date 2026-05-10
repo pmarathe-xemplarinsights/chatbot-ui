@@ -1,0 +1,1128 @@
+{
+  "info": {
+    "_postman_id": "ce7410be-ec2c-4430-b137-9ff1f6e670d3",
+    "name": "Connect6 - Exi migration",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "26218038",
+    "_collection_link": "https://go.postman.co/collection/26218038-ce7410be-ec2c-4430-b137-9ff1f6e670d3?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "/generate-token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "environment",
+            "value": "doxi",
+            "disabled": true
+          },
+          {
+            "key": "request_body_encrypted",
+            "value": "0"
+          },
+          {
+            "key": "need_encrypted_response",
+            "value": "0"
+          },
+          {
+            "key": "enc_version",
+            "value": "V2"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"session_id\": \"e93a6648-2a3a-4d16-9407-7da7aadrdudddrffdeee2e38e\",\n    \"connection_id\": \"7e92e1e7-1117-4bf5-bca0-ba998dudeedfe8feda76f\",\n    \"access_key\": \"955c51e1030c483cb34761d9d5c1354d\",\n    \"secret_key\": \"a78bf2ccb6c549748943f840d1e62be4\",\n    \"privacy_policy\": 1,\n    \"meta_data\": {\n        \"latitude\": 17.4343648,\n        \"longitude\": 78.3955874,\n        \"browser_unique_identifier\": \"4135a2cb-985e-475a-9ac8-7122d234fa5c\",\n        \"ip_address\": \"183.82.102.247\",\n        \"timezone\": \"Asia/Calcutta\",\n        \"session_time\": \"03-12-2025 11:41:39\",\n        \"hostUrl\": \"https://dfltsso0t947y.cloudfront.net\"\n    }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/connect6/v1/generate-token",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "connect6",
+            "v1",
+            "generate-token"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/create-chat-session",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "environment",
+            "value": "connect6",
+            "disabled": true
+          },
+          {
+            "key": "request_body_encrypted",
+            "value": "0"
+          },
+          {
+            "key": "need_encrypted_response",
+            "value": "0"
+          },
+          {
+            "key": "enc_version",
+            "value": "V2"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"token\":\"11552bd3-a7bc-4be6-862d-e9d479af0319\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/connect6/v1/create-chat-session",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "connect6",
+            "v1",
+            "create-chat-session"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/get-policy-documents",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "environment",
+            "value": "policy-buddy",
+            "type": "text",
+            "disabled": true
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "need_encrypted_response",
+            "value": "0",
+            "type": "text"
+          },
+          {
+            "key": "enc_version",
+            "value": "V2",
+            "type": "text"
+          },
+          {
+            "key": "document_id",
+            "value": "1",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"session_id\": \"e93a6648-2a3a-4d16-9407-7da7aadsddd5e2e38e\",\r\n    \"auth_payload\": [\r\n        {\r\n            \"key\": \"policy_number\",\r\n            \"label\": \"policy number\",\r\n            \"description\": \"This is the policy number of the user.\",\r\n            \"prompt\": \"Please provide the policy number.\",\r\n            \"value\": \"A123456789\",\r\n            \"type\": \"string\",\r\n            \"use_as_primary_key\": true\r\n        },\r\n        {\r\n            \"key\": \"zip_code\",\r\n            \"description\": \"This is the zip code of the user.\",\r\n            \"label\": \"zip code\",\r\n            \"prompt\": \"Please provide the zip code.\",\r\n            \"value\": \"90012\",\r\n            \"type\": \"string\",\r\n            \"use_as_primary_key\": false\r\n        }\r\n    ],\r\n    \"last_used_policy\": \"anilStgPL14688\",\r\n    \"all_policies\": [\r\n        {\r\n            \"policy_number\": \"A123456789\",\r\n            \"zip_code\": \"90012\"\r\n        }\r\n    ]\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:4000/policy-buddy/v1/get-policy-documents",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "policy-buddy",
+            "v1",
+            "get-policy-documents"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/get-policy-details",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "environment",
+            "value": "policy-buddy",
+            "disabled": true
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "need_encrypted_response",
+            "value": "0"
+          },
+          {
+            "key": "enc_version",
+            "value": "V2"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"session_id\": \"e93a6648-2a3a-4d16-9407-7da7aadsddd5e2e38e\",\n    \"auth_payload\": [\n        {\n            \"key\": \"policy_number\",\n            \"label\": \"policy number\",\n            \"description\": \"This is the policy number of the user.\",\n            \"prompt\": \"Please provide the policy number.\",\n            \"value\": \"A123456789\",\n            \"type\": \"string\",\n            \"use_as_primary_key\": true\n        },\n        {\n            \"key\": \"zip_code\",\n            \"description\": \"This is the zip code of the user.\",\n            \"label\": \"zip code\",\n            \"prompt\": \"Please provide the zip code.\",\n            \"value\": \"90012\",\n            \"type\": \"string\",\n            \"use_as_primary_key\": false\n        }\n    ],\n    \"last_used_policy\": \"A123456789\",\n    \"all_policies\": [\n        {\n            \"policy_number\": \"A123456789\",\n            \"zip_code\": \"90012\"\n        }\n    ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/policy-buddy/v1/get-policy-details",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "policy-buddy",
+            "v1",
+            "get-policy-details"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/connect6/v1/get-chat-transcript",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "environment",
+            "value": "connect6",
+            "type": "text",
+            "disabled": true
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "need_encrypted_response",
+            "value": "0",
+            "type": "text"
+          },
+          {
+            "key": "enc_version",
+            "value": "V2",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4002/connect6/v1/get-chat-transcript",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4002",
+          "path": [
+            "connect6",
+            "v1",
+            "get-chat-transcript"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/get-payment-due",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "environment",
+            "value": "policy-buddy",
+            "type": "text",
+            "disabled": true
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "need_encrypted_response",
+            "value": "0",
+            "type": "text"
+          },
+          {
+            "key": "enc_version",
+            "value": "V2",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"session_id\": \"e93a6648-2a3a-4d16-9407-7da7aadsddd5e2e38e\",\r\n    \"auth_payload\": [\r\n        {\r\n            \"key\": \"policy_number\",\r\n            \"label\": \"policy number\",\r\n            \"description\": \"This is the policy number of the user.\",\r\n            \"prompt\": \"Please provide the policy number.\",\r\n            \"value\": \"A123456789\",\r\n            \"type\": \"string\",\r\n            \"use_as_primary_key\": true\r\n        },\r\n        {\r\n            \"key\": \"zip_code\",\r\n            \"description\": \"This is the zip code of the user.\",\r\n            \"label\": \"zip code\",\r\n            \"prompt\": \"Please provide the zip code.\",\r\n            \"value\": \"90012\",\r\n            \"type\": \"string\",\r\n            \"use_as_primary_key\": false\r\n        }\r\n    ],\r\n    \"last_used_policy\": \"anilStgPL14688\",\r\n    \"all_policies\": [\r\n        {\r\n            \"policy_number\": \"A123456789\",\r\n            \"zip_code\": \"90012\"\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/policy-buddy/v1/get-payment-due",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "policy-buddy",
+            "v1",
+            "get-payment-due"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/get-chat-transcript",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "environment",
+            "value": "policy-buddy",
+            "type": "text",
+            "disabled": true
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "need_encrypted_response",
+            "value": "0",
+            "type": "text"
+          },
+          {
+            "key": "enc_version",
+            "value": "V2",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"session_id\": \"e93a6648-2a3a-4d16-9407-7da7aadsddd5e2e38e\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/connect6/v1/get-chat-transcript",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "connect6",
+            "v1",
+            "get-chat-transcript"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/get-auto-claim",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "environment",
+            "value": "policy-buddy",
+            "type": "text",
+            "disabled": true
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "need_encrypted_response",
+            "value": "0",
+            "type": "text"
+          },
+          {
+            "key": "enc_version",
+            "value": "V2",
+            "type": "text"
+          },
+          {
+            "key": "auto_fnol_id",
+            "value": "AC-0112541609",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"session_id\": \"e93a6648-2a3a-4d16-9407-7da7aadsd5238e\",\r\n    \"auth_payload\": [\r\n        {\r\n            \"key \": \"policy_number\",\r\n            \"value\": \"A123456789\"\r\n        },\r\n        {\r\n            \"key\": \"zip_code\",\r\n            \"value\": \"90012\"\r\n        }\r\n    ],\r\n    \"last_used_policy\": \"XEPL190986-00\",\r\n    \"all_policies\": [\r\n        {\r\n            \"policy_number\": \"A123456789\"\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/policy-buddy/v1/get-auto-claim",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "policy-buddy",
+            "v1",
+            "get-auto-claim"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/initiate-payment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "environment",
+            "value": "policy-buddy",
+            "type": "text",
+            "disabled": true
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "need_encrypted_response",
+            "value": "0",
+            "type": "text"
+          },
+          {
+            "key": "enc_version",
+            "value": "V2",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "\r\n\r\n{\r\n    \"session_id\": \"e93a6648-2a3a-4d16-9407-7da7aadsddd5e2e38e\",\r\n    \"transaction_amount\": \"10.06\",\r\n    \"auth_payload\": [\r\n        {\r\n            \"key\": \"policy_number\",\r\n            \"label\": \"policy number\",\r\n            \"description\": \"This is the policy number of the user.\",\r\n            \"prompt\": \"Please provide the policy number.\",\r\n            \"value\": \"A123456789\",\r\n            \"type\": \"string\",\r\n            \"use_as_primary_key\": true\r\n        },\r\n        {\r\n            \"key\": \"zip_code\",\r\n            \"description\": \"This is the zip code of the user.\",\r\n            \"label\": \"zip code\",\r\n            \"prompt\": \"Please provide the zip code.\",\r\n            \"value\": \"90012\",\r\n            \"type\": \"string\",\r\n            \"use_as_primary_key\": false\r\n        }\r\n    ],\r\n    \"last_used_policy\": \"anilStgPL14688\",\r\n    \"all_policies\": [\r\n        {\r\n            \"policy_number\": \"A123456789\",\r\n            \"zip_code\": \"90012\"\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/policy-buddy/v1/initiate-payment",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "policy-buddy",
+            "v1",
+            "initiate-payment"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/get-payment-schedule",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "environment",
+            "value": "policy-buddy",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "need_encrypted_response",
+            "value": "0",
+            "type": "text"
+          },
+          {
+            "key": "enc_version",
+            "value": "V2",
+            "type": "text"
+          },
+          {
+            "key": "payment_type",
+            "value": "3",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"session_id\": \"e93a6648-2a3a-4d16-9407-7da7aadsddd5e2e38e\",\r\n    \"auth_payload\": [\r\n        {\r\n            \"key\": \"policy_number\",\r\n            \"label\": \"policy number\",\r\n            \"description\": \"This is the policy number of the user.\",\r\n            \"prompt\": \"Please provide the policy number.\",\r\n            \"value\": \"anilStgPL14688\",\r\n            \"type\": \"string\",\r\n            \"use_as_primary_key\": true\r\n        },\r\n        {\r\n            \"key\": \"zip_code\",\r\n            \"description\": \"This is the zip code of the user.\",\r\n            \"label\": \"zip code\",\r\n            \"prompt\": \"Please provide the zip code.\",\r\n            \"value\": \"19087\",\r\n            \"type\": \"string\",\r\n            \"use_as_primary_key\": false\r\n        }\r\n    ],\r\n    \"last_used_policy\": \"anilStgPL14688\",\r\n    \"all_policies\": [\r\n        {\r\n            \"policy_number\": \"A123456789\",\r\n            \"zip_code\": \"90012\"\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/policy-buddy/v1/get-payment-schedule",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "policy-buddy",
+            "v1",
+            "get-payment-schedule"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/post-back-payment",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"Status\": \"SUCCESS\",\n  \"TransactionType\": \"ThirdParty\",\n  \"ResponseMessage\": \"success\",\n  \"ResponseCode\": \"200\",\n  \"CardType\": \"Visa\",\n  \"AccountNumber\": \"1111\",\n  \"ExpirationDateMMYY\": \"12/30\",\n  \"PaymentMethod\": \"CC\",\n  \"TransactionDate\": \"2026-02-26 16:14:42\",\n  \"TransactionAmount\": \"20.00\",\n  \"AuthCode\": \"\",\n  \"AvsRsltCode\": \"\",\n  \"TransactionID\": \"741837435678\",\n  \"CVV2ResponseMessage\": \"CVV MATCH\",\n  \"CVV2ResponseCode\": \"M\",\n  \"ThirdPartyCallID\": \"79659999962\",\n  \"AddVault\": \"Y\",\n  \"CustomerID\": \"h7e4x3p43-j5qqonbhs\",\n  \"PolicyNum\": \"A123456789\",\n  \"Error\": \"\",\n  \"StatusMessage\": \"\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/policy-buddy/v1/post-back-payment",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "policy-buddy",
+            "v1",
+            "post-back-payment"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/make-payment-using-vault",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "environment",
+            "value": "policy-buddy",
+            "type": "text",
+            "disabled": true
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "need_encrypted_response",
+            "value": "0",
+            "type": "text"
+          },
+          {
+            "key": "enc_version",
+            "value": "V2",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "\r\n\r\n{\r\n    \"session_id\": \"e93a6648-2a3a-4d16-9407-7da7aadsddd5e2e38e\",\r\n    \"transaction_amount\": \"10.0\",\r\n    \"vault_id\": \"h7e4x3p43-j5qqonbhs\",\r\n    \"auth_payload\": [\r\n        {\r\n            \"key\": \"policy_number\",\r\n            \"label\": \"policy number\",\r\n            \"description\": \"This is the policy number of the user.\",\r\n            \"prompt\": \"Please provide the policy number.\",\r\n            \"value\": \"anilStgPL14688\",\r\n            \"type\": \"string\",\r\n            \"use_as_primary_key\": true\r\n        },\r\n        {\r\n            \"key\": \"zip_code\",\r\n            \"description\": \"This is the zip code of the user.\",\r\n            \"label\": \"zip code\",\r\n            \"prompt\": \"Please provide the zip code.\",\r\n            \"value\": \"19087\",\r\n            \"type\": \"string\",\r\n            \"use_as_primary_key\": false\r\n        }\r\n    ],\r\n    \"last_used_policy\": \"anilStgPL14688\",\r\n    \"all_policies\": [\r\n        {\r\n            \"policy_number\": \"A123456789\",\r\n            \"zip_code\": \"90012\"\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/policy-buddy/v1/make-payment-using-vault",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "policy-buddy",
+            "v1",
+            "make-payment-using-vault"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/insert-policy-change-request",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "environment",
+            "value": "policy-buddy",
+            "type": "text",
+            "disabled": true
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "need_encrypted_response",
+            "value": "0",
+            "type": "text"
+          },
+          {
+            "key": "enc_version",
+            "value": "V2",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "\n{\n    \"session_id\": \"e93a6648-2a3a-4d16-9407-7da7aadsddd5e2e38e\",\n    \"request_id\": \"PC-112313\",\n    \"request_type_id\": \"7\",\n    \"request_sub_type_id\": \"\",\n    \"request_details\": \"Description:Data\",\n    \"attachment_link\": [],\n    \"submitted_datetime\": \"2026-03-02 01:05:35\",\n    \"auth_payload\": [\n        {\n            \"key\": \"policy_number\",\n            \"label\": \"policy number\",\n            \"description\": \"This is the policy number of the user.\",\n            \"prompt\": \"Please provide the policy number.\",\n            \"value\": \"A123456789\",\n            \"type\": \"string\",\n            \"use_as_primary_key\": true\n        },\n        {\n            \"key\": \"zip_code\",\n            \"description\": \"This is the zip code of the user.\",\n            \"label\": \"zip code\",\n            \"prompt\": \"Please provide the zip code.\",\n            \"value\": \"90012\",\n            \"type\": \"string\",\n            \"use_as_primary_key\": false\n        }\n    ],\n    \"last_used_policy\": \"anilStgPL14688\",\n    \"all_policies\": [\n        {\n            \"policy_number\": \"A123456789\",\n            \"zip_code\": \"90012\"\n        }\n    ]\n}\n\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/policy-buddy/v1/insert-policy-change-request",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "policy-buddy",
+            "v1",
+            "insert-policy-change-request"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/submit-auto-claim",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "environment",
+            "value": "policy-buddy",
+            "type": "text",
+            "disabled": true
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "need_encrypted_response",
+            "value": "0",
+            "type": "text"
+          },
+          {
+            "key": "enc_version",
+            "value": "V2",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"session_id\": \"e93a6648-2a3a-4d16-9407-7da7aadsddd5e2e38e\",\n        \"date_of_incident\": \"2025-12-08\",\n    \"time_of_incident\": \"11:00\",\n    \"location_of_incident\": \"Madhapur, Hyderabad, Telangana\",\n    \"vehicle_involved\": \"2022 Aston Martin V12 Vanquish S\",\n    \"involved_vehicle_vin\": \"1ABC123456789XYZ\",\n    \"driver_involved\": \"Ashok Kancherla\",\n    \"incident_description\": \"The vehicle hit a pole, causing a bump and damage to the car door.\",\n    \"any_witness\": \"0\",\n    \"witness_name\": \"NA\",\n    \"witness_contact_information\": \"NA\",\n    \"has_police_responded\": \"0\",\n    \"police_department\": \"NA\",\n    \"police_report_number\": \"NA\",\n    \"was_ambulance_called\": \"0\",\n    \"ambulance_information\": \"NA\",\n    \"was_anyone_injured\": \"0\",\n    \"injury_information\": \"NA\",\n    \"any_fatality\": \"0\",\n    \"fatality_information\": \"NA\",\n    \"any_hazardous_material\": \"0\",\n    \"was_hazmat_called\": \"0\",\n    \"any_property_damaged\": \"1\",\n    \"property_damage_information\": \"Pole was hit during the incident\",\n    \"any_passenger\": \"0\",\n    \"passenger_name\": \"NA\",\n    \"passenger_contact_information\": \"NA\",\n    \"was_insured_vehicle_damaged\": \"1\",\n    \"insured_vehicle_damage_information\": \"Car door damaged from hitting a pole\",\n    \"was_vehicle_towed\": \"0\",\n    \"towing_information\": \"NA\",\n    \"was_another_vehicle_damaged\": \"0\",\n    \"other_vehicle_damage_information\": \"NA\",\n    \"pictures\": [],\n    \"video\": [],\n    \"audio\": [],\n    \"submitted_datetime\": \"2026-04-01 11:00:00\",\n    \"time_zone\": \"IST\",\n    \"auto_fnol_id\": \"AC-011256\",\n    \"fnol_summary\": \"CLAIM SUMMARY FOR REVIEW Policy Information: Policy Number: A123456789 Zip Code: 90012 Incident Details: Date of Incident: 01-Dec-2025 Time of Incident: 11:00 Location: Madhapur, Hyderabad, Telangana Incident Description: The vehicle hit a pole, causing a bump and damage to the car door. Driver & Vehicle Information: Driver Involved: Ashok Kancherla Vehicle Involved: 2022 Aston Martin V12 Vanquish S Vehicle VIN: 1ABC123456789XYZ Incident Summary: Passengers Involved: No Anyone Injured: No Fatality: No Ambulance Called: No Insured Vehicle Damaged: Yes - Car door damaged from hitting a pole Another Vehicle Damaged: No Vehicle Towed: No Witness Present: No Police Responded: No Property Damaged: Yes - Pole was hit during the incident Hazardous Material Involved: No Please review the above claim information carefully. If all details are accurate and complete, please confirm to proceed with submitting your claim.\",\n    \"auth_payload\": [\n        {\n            \"key\": \"policy_number\",\n            \"label\": \"policy number\",\n            \"description\": \"This is the policy number of the user.\",\n            \"prompt\": \"Please provide the policy number.\",\n            \"value\": \"anilStgPL14688\",\n            \"type\": \"string\",\n            \"use_as_primary_key\": true\n        },\n        {\n            \"key\": \"zip_code\",\n            \"description\": \"This is the zip code of the user.\",\n            \"label\": \"zip code\",\n            \"prompt\": \"Please provide the zip code.\",\n            \"value\": \"19087\",\n            \"type\": \"string\",\n            \"use_as_primary_key\": false\n        }\n    ],\n    \"last_used_policy\": \"A123456789\",\n    \"all_policies\": [\n        {\n            \"policy_number\": \"A123456789\",\n            \"zip_code\": \"90012\"\n        }\n    ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/policy-buddy/v1/submit-auto-claim",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "policy-buddy",
+            "v1",
+            "submit-auto-claim"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/upload-documents",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "environment",
+            "value": "policy-buddy",
+            "type": "text",
+            "disabled": true
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "need_encrypted_response",
+            "value": "0",
+            "type": "text"
+          },
+          {
+            "key": "enc_version",
+            "value": "V2",
+            "type": "text"
+          },
+          {
+            "key": "chat_user_id",
+            "value": "12650",
+            "type": "text"
+          },
+          {
+            "key": "policy_number",
+            "value": "A123456789",
+            "type": "text"
+          },
+          {
+            "key": "submitted_date_time",
+            "value": "2026-03-02 14:06:30",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "type": "file",
+              "key": "attachment",
+              "src": [
+                "/C:/Users/rraheem/Pictures/Screenshots/Screenshot (7).png",
+                "/C:/Users/rraheem/Pictures/Screenshots/Screenshot (10).png",
+                "/C:/Users/rraheem/Videos/Captures/Engage - Google Chrome 2023-09-22 16-01-35-02.mp4"
+              ]
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:4000/policy-buddy/v1/upload-documents",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "policy-buddy",
+            "v1",
+            "upload-documents"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/upload-claim-files",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "environment",
+            "value": "policy-buddy",
+            "type": "text",
+            "disabled": true
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "need_encrypted_response",
+            "value": "0",
+            "type": "text"
+          },
+          {
+            "key": "enc_version",
+            "value": "V2",
+            "type": "text"
+          },
+          {
+            "key": "auto_fnol_id",
+            "value": "AC-0112541609",
+            "type": "text"
+          },
+          {
+            "key": "policy_number",
+            "value": "A123456789",
+            "type": "text"
+          },
+          {
+            "key": "submitted_date_time",
+            "value": "2026-03-02 14:06:30",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "attachment",
+              "type": "file",
+              "uuid": "c3a62587-f88c-4daa-a87c-eb7bcf5d1602",
+              "src": "/C:/Users/rraheem/OneDrive - BAY6AI INC/Pictures/Screenshots/Screenshot (11).png"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:4000/policy-buddy/v1/upload-claim-files",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "policy-buddy",
+            "v1",
+            "upload-claim-files"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/get-claim-status",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "environment",
+            "value": "connect6",
+            "type": "text",
+            "disabled": true
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "need_encrypted_response",
+            "value": "0",
+            "type": "text"
+          },
+          {
+            "key": "enc_version",
+            "value": "V2",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"session_id\": \"e93a6648-2a3a-4d16-9407-7da7aadsddd5e2e38e\",\r\n    \"auth_payload\": [\r\n        {\r\n            \"key\": \"policy_number\",\r\n            \"label\": \"policy number\",\r\n            \"description\": \"This is the policy number of the user.\",\r\n            \"prompt\": \"Please provide the policy number.\",\r\n            \"value\": \"A123456789\",\r\n            \"type\": \"string\",\r\n            \"use_as_primary_key\": true\r\n        },\r\n        {\r\n            \"key\": \"zip_code\",\r\n            \"description\": \"This is the zip code of the user.\",\r\n            \"label\": \"zip code\",\r\n            \"prompt\": \"Please provide the zip code.\",\r\n            \"value\": \"90012\",\r\n            \"type\": \"string\",\r\n            \"use_as_primary_key\": false\r\n        }\r\n    ],\r\n    \"last_used_policy\": \"anilStgPL14688\",\r\n    \"all_policies\": [\r\n        {\r\n            \"policy_number\": \"A123456789\",\r\n            \"zip_code\": \"90012\"\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/policy-buddy/v1/get-claim-status",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "policy-buddy",
+            "v1",
+            "get-claim-status"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/get-docs-upload-link",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "environment",
+            "value": "policy-buddy",
+            "type": "text",
+            "disabled": true
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "need_encrypted_response",
+            "value": "0",
+            "type": "text"
+          },
+          {
+            "key": "enc_version",
+            "value": "V2",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"session_id\": \"e93a6648-2a3a-4d16-9407-7da7aadsddd5e2e38e\",\r\n    \"auth_payload\": [\r\n        {\r\n            \"key\": \"policy_number\",\r\n            \"label\": \"policy number\",\r\n            \"description\": \"This is the policy number of the user.\",\r\n            \"prompt\": \"Please provide the policy number.\",\r\n            \"value\": \"A123456789\",\r\n            \"type\": \"string\",\r\n            \"use_as_primary_key\": true\r\n        },\r\n        {\r\n            \"key\": \"zip_code\",\r\n            \"description\": \"This is the zip code of the user.\",\r\n            \"label\": \"zip code\",\r\n            \"prompt\": \"Please provide the zip code.\",\r\n            \"value\": \"90012\",\r\n            \"type\": \"string\",\r\n            \"use_as_primary_key\": false\r\n        }\r\n    ],\r\n    \"last_used_policy\": \"anilStgPL14688\",\r\n    \"all_policies\": [\r\n        {\r\n            \"policy_number\": \"A123456789\",\r\n            \"zip_code\": \"90012\"\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/policy-buddy/v1/get-docs-upload-link",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "policy-buddy",
+            "v1",
+            "get-docs-upload-link"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/disconnect-connection",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "environment",
+            "value": "doxi"
+          },
+          {
+            "key": "request_body_encrypted",
+            "value": "0"
+          },
+          {
+            "key": "need_encrypted_response",
+            "value": "0"
+          },
+          {
+            "key": "enc_version",
+            "value": "V2"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"connectionToken\":\"QVFJREFIaHcrdnVPa0k5OGRjUVFPcGtUdWgrRFV3YkFzY25QMFVrNHN6Z3Vmc2ZNNFFHUlRDMmFLbFUrSmx6WGkrcDF6WHRYQUFBQWJqQnNCZ2txaGtpRzl3MEJCd2FnWHpCZEFnRUFNRmdHQ1NxR1NJYjNEUUVIQVRBZUJnbGdoa2dCWlFNRUFTNHdFUVFNSzJwQjRHNEhVSUtTbWZxZEFnRVFnQ3RDUGFnMU45cGlqcHRnRzMva3lVUVltSlZBdVV4QVVPaFZwVnF0cjJONVNad2JDM2IybmdUWEkwazY6OkE5cmRIWG8yNkxON29ucU1ObFcwNFhMaHg2TDRKWDVVVHRkK1ovNWlJUXJtSjhoSzRnK3B2NGRqVG5LY0hGUWtzTHh6MW9WSk41ODhMOTRNZFJxTS9EMEVtdHlPckh1ZW5tcEJ4bHM0Y080WEx6dDF2eFNKaVRBQjZ5cmNoQlcwMGk2b04xWUhmcnJiTDA3Ukk5eGR3eFRJSnJRZkhsQmZkWUZMY2FOdmF1ZHl6cWYvTEQyQ0hJYVozd0ZlcEd4MHUvZjRhcVowd0VqNGRtTFZ5ZEVvYmM0bHl6QkxIVEZCTU5LcWo3SHBwUmEwT3pJZVUrV3czTEtMSmw1S2ZHd1dsampuMm1HbWsyWVhCZzhsdEM2VzFVOUFkb3hCYUhOSkhQaUFra2pD\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/connect6/v1/disconnect-participant-connection",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "connect6",
+            "v1",
+            "disconnect-participant-connection"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/send-message",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "environment",
+            "value": "doxi"
+          },
+          {
+            "key": "request_body_encrypted",
+            "value": "0"
+          },
+          {
+            "key": "need_encrypted_response",
+            "value": "0"
+          },
+          {
+            "key": "enc_version",
+            "value": "V2"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"message\":\"I want to change my policy plan\",\n    \"connectionToken\":\"QVFJREFIaHcrdnVPa0k5OGRjUVFPcGtUdWgrRFV3YkFzY25QMFVrNHN6Z3Vmc2ZNNFFGVi9ZMXVFSXh5TnIwcUhmWlgrZXJkQUFBQWJqQnNCZ2txaGtpRzl3MEJCd2FnWHpCZEFnRUFNRmdHQ1NxR1NJYjNEUUVIQVRBZUJnbGdoa2dCWlFNRUFTNHdFUVFNaEY1TDVweFY0eUhrbU5yZEFnRVFnQ3R2eWs4VjQyUDAxZm16UnRNdXQ5NmZoV0YrZlZCUytHQUliTVRTQThsZXBXWnY0b0ZZOTcyblNDYW46Ond3eld4VHBGd0lSdEpZd1dwN1UzTTY4N0hKbmw1dEp2RVJBemR1YURVSEdLeUF5VnNUbkQvWmkybmpjV3psa1N6ZVFFdXBOcEFuaGNRMlpvKzVRakpzR1czdWFLaDI3eDRIMFF5T2Y4Q0M5Z1BzQ3BIVmlrMlVhY05ickluOS85c2dFOWI3Tm4zSDAwbGhFQ2JIMUp4KzJjbnhRZUd0KzR6c2VJelY3QUQ4c21MbCtzUVIzRTBaYmZwRXJtWEhzS0Z4K1lydHRxVVJYVkpkQWd4VUhTckhKN24wNjlPVEFIWXpXQnFZb1YwOWlHZlIwc2plRmtDdWFGcDVxMDFJUnU5cyt1aGVaMDcyUHMzVjI1Uy9uSWdoOGdPNG93SWwvQUFPYzdjTUNm\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/connect6/v1/send-message",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "connect6",
+            "v1",
+            "send-message"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/create-connection",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "environment",
+            "value": "doxi"
+          },
+          {
+            "key": "request_body_encrypted",
+            "value": "0"
+          },
+          {
+            "key": "need_encrypted_response",
+            "value": "0"
+          },
+          {
+            "key": "enc_version",
+            "value": "V2"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "client_code",
+            "value": "2",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"userName\": \"Abdul Razzaq\",\n    \"queue\":\"\",\n    \"chatUserId\" : 11098\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:4000/connect6/v1/create-connection",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "connect6",
+            "v1",
+            "create-connection"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
