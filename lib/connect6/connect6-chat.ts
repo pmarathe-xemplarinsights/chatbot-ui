@@ -16,9 +16,13 @@ import {
 } from "./bay6-crypto"
 import {
   getConnectionId,
+  getOrCreateConnect6ConversationId,
   getOrCreateSessionId,
   rotateConnectionId
 } from "./session-storage"
+
+/** Gateway refuses session → retry plain WS once; persistent close needs Bay6-side config. */
+const CLOSING_MSG_RE = /^closing connection/i
 
 /** Browser-only diagnostics (explicit console.log for DevTools filtering). */
 function c6log(...args: unknown[]) {
@@ -506,126 +510,150 @@ export async function handleConnect6Chat(
   setToolInUse("none")
 
   const sessionId = getOrCreateSessionId()
-
-  let ws: WebSocket
-  let clientCodeForPayload: string
-
-  if (
-    sharedSocket?.readyState === WebSocket.OPEN &&
-    sharedWsToken &&
-    sharedClientCode
-  ) {
-    ws = sharedSocket
-    clientCodeForPayload = sharedClientCode
-    c6log(
-      "Reusing existing WebSocket session (skipping generate-token / create-chat-session this turn)"
-    )
-  } else {
-    let connectionId = getConnectionId()
-
-    let tokenRes = await generateToken(sessionId, connectionId)
-    const ok = (s: GenerateTokenResponse) =>
-      (s.success === 1 || s.success === true || s.success === "1") && !!s.token
-
-    if (!ok(tokenRes)) {
-      rotateConnectionId()
-      connectionId = getConnectionId()
-      tokenRes = await generateToken(sessionId, connectionId)
-    }
-
-    if (!ok(tokenRes)) {
-      throw new Error(
-        tokenRes.message || "generate-token did not return success"
-      )
-    }
-
-    const token = tokenRes.token as string
-    clientCodeForPayload = tokenRes.client_code || getConnect6ClientCode()
-
-    await createChatSession(token)
-
-    ws = await ensureWebSocket(token, clientCodeForPayload, signal)
-    c6log(
-      "REST steps complete; WebSocket ready for client_code=",
-      clientCodeForPayload
-    )
-  }
-  const payload = buildUserPayload(
-    sessionId,
-    messageContent,
-    sessionId,
-    clientCodeForPayload
-  )
-  c6log("WebSocket outbound JSON (user_message preview)", {
-    session_id: payload.session_id,
-    conversation_id: payload.conversation_id,
-    client_code: payload.client_code,
-    user_message_preview:
-      messageContent.length > 120
-        ? `${messageContent.slice(0, 120)}…`
-        : messageContent
-  })
+  const conversationId = getOrCreateConnect6ConversationId(sessionId)
   const assistantId = tempAssistantChatMessage.message.id
 
-  const replyPromise = new Promise<string>((resolve, reject) => {
-    const timeoutId = setTimeout(() => {
-      if (pending) {
-        pending.reject(new Error("Connect6 reply timed out"))
-        pending = null
-      }
-    }, 180_000)
+  const runTurn = async (wsEncrypt: boolean): Promise<string> => {
+    let ws: WebSocket
+    let clientCodeForPayload: string
 
-    const flushUi = () => {
-      setFirstTokenReceived(true)
-      const text = pending?.chunks.join("") ?? ""
-      setChatMessages(prev =>
-        prev.map(cm =>
-          cm.message.id === assistantId
-            ? { ...cm, message: { ...cm.message, content: text } }
-            : cm
+    if (
+      sharedSocket?.readyState === WebSocket.OPEN &&
+      sharedWsToken &&
+      sharedClientCode
+    ) {
+      ws = sharedSocket
+      clientCodeForPayload = sharedClientCode
+      c6log(
+        "Reusing existing WebSocket session (skipping generate-token / create-chat-session this turn)"
+      )
+    } else {
+      let connectionId = getConnectionId()
+
+      let tokenRes = await generateToken(sessionId, connectionId)
+      const ok = (s: GenerateTokenResponse) =>
+        (s.success === 1 || s.success === true || s.success === "1") &&
+        !!s.token
+
+      if (!ok(tokenRes)) {
+        rotateConnectionId()
+        connectionId = getConnectionId()
+        tokenRes = await generateToken(sessionId, connectionId)
+      }
+
+      if (!ok(tokenRes)) {
+        throw new Error(
+          tokenRes.message || "generate-token did not return success"
         )
+      }
+
+      const token = tokenRes.token as string
+      clientCodeForPayload = tokenRes.client_code || getConnect6ClientCode()
+
+      await createChatSession(token)
+
+      ws = await ensureWebSocket(token, clientCodeForPayload, signal)
+      c6log(
+        "REST steps complete; WebSocket ready for client_code=",
+        clientCodeForPayload
       )
     }
 
-    pending = {
-      chunks: [],
-      resolve: text => {
-        clearTimeout(timeoutId)
-        resolve(text)
-      },
-      reject: err => {
-        clearTimeout(timeoutId)
-        reject(err)
-      },
-      timeoutId,
-      flushUi
-    }
-  })
+    const payload = buildUserPayload(
+      sessionId,
+      messageContent,
+      conversationId,
+      clientCodeForPayload
+    )
+    c6log("WebSocket outbound JSON (user_message preview)", {
+      session_id: payload.session_id,
+      conversation_id: payload.conversation_id,
+      client_code: payload.client_code,
+      wsEncrypt,
+      user_message_preview:
+        messageContent.length > 120
+          ? `${messageContent.slice(0, 120)}…`
+          : messageContent
+    })
 
-  signal.addEventListener(
-    "abort",
-    () => {
-      if (pending) {
-        clearTimeout(pending.timeoutId)
-        pending.reject(new Error("Aborted"))
-        pending = null
+    const replyPromise = new Promise<string>((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        if (pending) {
+          pending.reject(new Error("Connect6 reply timed out"))
+          pending = null
+        }
+      }, 180_000)
+
+      const flushUi = () => {
+        setFirstTokenReceived(true)
+        const text = pending?.chunks.join("") ?? ""
+        setChatMessages(prev =>
+          prev.map(cm =>
+            cm.message.id === assistantId
+              ? { ...cm, message: { ...cm.message, content: text } }
+              : cm
+          )
+        )
       }
-      closeSharedSocket()
-    },
-    { once: true }
-  )
 
-  const outbound = isConnect6WsBay6Encrypt()
-    ? bay6EncryptWirePayload(payload)
-    : JSON.stringify(payload)
-  ws.send(outbound)
-  c6log(
-    "WebSocket send() complete;",
-    isConnect6WsBay6Encrypt() ? "encrypted wire payload" : "plain JSON",
-    "— waiting for streamed chunks / complete_response"
-  )
+      pending = {
+        chunks: [],
+        resolve: text => {
+          clearTimeout(timeoutId)
+          resolve(text)
+        },
+        reject: err => {
+          clearTimeout(timeoutId)
+          reject(err)
+        },
+        timeoutId,
+        flushUi
+      }
+    })
 
-  const fullText = await replyPromise
+    signal.addEventListener(
+      "abort",
+      () => {
+        if (pending) {
+          clearTimeout(pending.timeoutId)
+          pending.reject(new Error("Aborted"))
+          pending = null
+        }
+        closeSharedSocket()
+      },
+      { once: true }
+    )
+
+    const outbound = wsEncrypt
+      ? bay6EncryptWirePayload(payload)
+      : JSON.stringify(payload)
+    ws.send(outbound)
+    c6log(
+      "WebSocket send() complete;",
+      wsEncrypt ? "encrypted wire payload" : "plain JSON",
+      "— waiting for streamed chunks / complete_response"
+    )
+
+    return replyPromise
+  }
+
+  let wsEncrypt = isConnect6WsBay6Encrypt()
+  let fullText = await runTurn(wsEncrypt)
+
+  if (CLOSING_MSG_RE.test(fullText.trim()) && wsEncrypt) {
+    c6log(
+      "Connect6: encrypted WS send got close message — retrying once with plain JSON (or set NEXT_PUBLIC_CONNECT6_WS_BAY6_ENCRYPT=false)."
+    )
+    closeSharedSocket()
+    rotateConnectionId()
+    fullText = await runTurn(false)
+  }
+
+  if (CLOSING_MSG_RE.test(fullText.trim())) {
+    throw new Error(
+      'Connect6 rejected this session (reply: "Closing connection…"). Confirm access keys + NEXT_PUBLIC_CONNECT6_CLIENT_CODE match this Bay6 stack (HTTP/WSS hosts). If chat still fails, Bay6 may require encrypted REST (NEXT_PUBLIC_CONNECT6_BAY6_ENCRYPT=true) or different WS URL — check with them.'
+    )
+  }
 
   c6log("Connect6 reply finished; length=", fullText.length)
 
