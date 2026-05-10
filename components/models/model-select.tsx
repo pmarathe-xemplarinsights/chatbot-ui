@@ -183,7 +183,7 @@ export const ModelSelect: FC<ModelSelectProps> = ({
           {showConnect6Row && (
             <div className="border-primary/30 mb-3 border-b pb-2">
               <div className="mb-1 ml-2 text-xs font-bold tracking-wide opacity-80">
-                CONNECT6 (your API + v6/chatbot_websocket)
+                CONNECT6(API + v6/Websocket)
               </div>
               <div className="flex items-center space-x-1">
                 {selectedModelId === CONNECT6_MODEL.modelId && (

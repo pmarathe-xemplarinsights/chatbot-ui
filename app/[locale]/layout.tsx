@@ -3,6 +3,7 @@ import { GlobalState } from "@/components/utility/global-state"
 import { Providers } from "@/components/utility/providers"
 import TranslationsProvider from "@/components/utility/translations-provider"
 import initTranslations from "@/lib/i18n"
+import { connect6SkipsSupabaseAuth } from "@/lib/connect6/env"
 import { Database } from "@/supabase/types"
 import { createServerClient } from "@supabase/ssr"
 import { Metadata, Viewport } from "next"
@@ -84,7 +85,7 @@ export default async function RootLayout({
     }
   )
   const session = (await supabase.auth.getSession()).data.session
-  const connect6Poc = process.env.NEXT_PUBLIC_CONNECT6_POC_MODE === "true"
+  const connect6Poc = connect6SkipsSupabaseAuth()
 
   const { t, resources } = await initTranslations(locale, i18nNamespaces)
 

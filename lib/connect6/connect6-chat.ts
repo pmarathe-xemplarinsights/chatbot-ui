@@ -2,11 +2,13 @@ import type { ChatMessage } from "@/types"
 import type React from "react"
 import { v4 as uuidv4 } from "uuid"
 import {
-  getConnect6ClientCode,
+  connect6ShouldCreateChatSessionBeforeWs,
+  getConnect6ClientCodeRaw,
   getConnect6HttpBase,
   getConnect6WsBase,
   isConnect6Bay6Encrypt,
-  isConnect6WsBay6Encrypt
+  isConnect6WsBay6Encrypt,
+  normalizeConnect6ClientCode
 } from "./env"
 import {
   BAY6_ENC_SEPARATOR,
@@ -15,14 +17,41 @@ import {
   normalizeBay6WireInput
 } from "./bay6-crypto"
 import {
+  getBay6ServerSessionId,
   getConnectionId,
+  getLastWsPayloadSessionId,
   getOrCreateConnect6ConversationId,
-  getOrCreateSessionId,
-  rotateConnectionId
+  getSessionIdForBay6Api,
+  resetConnect6BrowserSession,
+  rotateConnectionId,
+  setBay6ServerSessionId,
+  setLastWsPayloadSessionId
 } from "./session-storage"
 
-/** Gateway refuses session → retry plain WS once; persistent close needs Bay6-side config. */
-const CLOSING_MSG_RE = /^closing connection/i
+/** Bay6 sometimes closes with plain text or JSON `message` (ASCII or Unicode ellipsis). */
+function isGatewayClosingMessage(raw: string): boolean {
+  const norm = (s: string) =>
+    s
+      .trim()
+      .replace(/\u2026/g, ".")
+      .replace(/…/g, ".")
+      .toLowerCase()
+  const t = raw.trim()
+  if (!t) return false
+  if (norm(t).startsWith("closing connection")) return true
+  try {
+    const j = JSON.parse(t) as Record<string, unknown>
+    const msg =
+      typeof j.message === "string"
+        ? j.message
+        : typeof j.error === "string"
+          ? j.error
+          : ""
+    return Boolean(msg && norm(msg).startsWith("closing connection"))
+  } catch {
+    return false
+  }
+}
 
 /** Browser-only diagnostics (explicit console.log for DevTools filtering). */
 function c6log(...args: unknown[]) {
@@ -145,10 +174,10 @@ async function generateToken(
       user_context: {}
     },
     meta_data: {
-      latitude: "",
-      longitude: "",
+      latitude: 0,
+      longitude: 0,
       browser_unique_identifier: browserUniqueId(),
-      ip_address: "",
+      ip_address: "127.0.0.1",
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       session_time: sessionTimeStamp(),
       hostUrl: typeof window !== "undefined" ? window.location.origin : "",
@@ -187,10 +216,32 @@ async function createChatSession(token: string): Promise<void> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ token })
   })
-  const data = (await res.json()) as { message?: string }
+  const data = (await res.json()) as {
+    message?: string
+    success?: number | boolean | string
+    session_id?: string
+  }
   if (!res.ok) {
     throw new Error(
       data.message || `Connect6 create-chat-session failed (${res.status})`
+    )
+  }
+  const sessionFailed =
+    data.success === false || data.success === 0 || data.success === "0"
+  if (sessionFailed) {
+    throw new Error(
+      data.message ||
+        "Connect6 create-chat-session returned success=0; check client_id + token (GET /api/connect6/debug)."
+    )
+  }
+  const sid =
+    typeof data.session_id === "string" && data.session_id.trim().length > 0
+      ? data.session_id.trim()
+      : undefined
+  if (sid) {
+    setBay6ServerSessionId(sid)
+    c6log(
+      "create-chat-session returned Bay6 session_id (use on next generate-token only; WS body uses the id from the token call)."
     )
   }
 }
@@ -477,7 +528,7 @@ function buildUserPayload(
   return {
     session_id: sessionId,
     request_id: uuidv4(),
-    client_code: clientCode === "DOXI" ? "DOX" : clientCode,
+    client_code: normalizeConnect6ClientCode(clientCode),
     request_to_generate_greeting_message: 0,
     user_message: userMessage,
     session_attributes: {
@@ -504,13 +555,11 @@ export async function handleConnect6Chat(
   setToolInUse: React.Dispatch<React.SetStateAction<string>>
 ): Promise<string> {
   c6log(
-    "Starting Connect6 chat turn — REST generate-token + create-chat-session, then WebSocket v6/chatbot_websocket (no /api/chat/*)"
+    "Starting Connect6 chat turn — REST generate-token (+ optional create-chat-session), then WebSocket v6/chatbot_websocket (no /api/chat/*)"
   )
   const signal = controller.signal
   setToolInUse("none")
 
-  const sessionId = getOrCreateSessionId()
-  const conversationId = getOrCreateConnect6ConversationId(sessionId)
   const assistantId = tempAssistantChatMessage.message.id
 
   const runTurn = async (wsEncrypt: boolean): Promise<string> => {
@@ -523,14 +572,15 @@ export async function handleConnect6Chat(
       sharedClientCode
     ) {
       ws = sharedSocket
-      clientCodeForPayload = sharedClientCode
+      clientCodeForPayload = normalizeConnect6ClientCode(sharedClientCode)
       c6log(
         "Reusing existing WebSocket session (skipping generate-token / create-chat-session this turn)"
       )
     } else {
       let connectionId = getConnectionId()
+      const sessionIdForToken = getSessionIdForBay6Api()
 
-      let tokenRes = await generateToken(sessionId, connectionId)
+      let tokenRes = await generateToken(sessionIdForToken, connectionId)
       const ok = (s: GenerateTokenResponse) =>
         (s.success === 1 || s.success === true || s.success === "1") &&
         !!s.token
@@ -538,7 +588,7 @@ export async function handleConnect6Chat(
       if (!ok(tokenRes)) {
         rotateConnectionId()
         connectionId = getConnectionId()
-        tokenRes = await generateToken(sessionId, connectionId)
+        tokenRes = await generateToken(sessionIdForToken, connectionId)
       }
 
       if (!ok(tokenRes)) {
@@ -547,20 +597,41 @@ export async function handleConnect6Chat(
         )
       }
 
+      setLastWsPayloadSessionId(sessionIdForToken)
+
       const token = tokenRes.token as string
-      clientCodeForPayload = tokenRes.client_code || getConnect6ClientCode()
+      const pathClientCode =
+        tokenRes.client_code?.trim() || getConnect6ClientCodeRaw()
+      clientCodeForPayload = normalizeConnect6ClientCode(pathClientCode)
 
-      await createChatSession(token)
+      if (connect6ShouldCreateChatSessionBeforeWs()) {
+        await createChatSession(token)
+      } else {
+        c6log(
+          "Skipping create-chat-session (Angular-style dev: WS after generate-token only). Set NEXT_PUBLIC_CONNECT6_CREATE_CHAT_SESSION=true to enable."
+        )
+      }
 
-      ws = await ensureWebSocket(token, clientCodeForPayload, signal)
+      ws = await ensureWebSocket(token, pathClientCode, signal)
       c6log(
-        "REST steps complete; WebSocket ready for client_code=",
+        "REST steps complete; WebSocket path client_code=",
+        pathClientCode,
+        "JSON client_code=",
         clientCodeForPayload
       )
     }
 
+    const payloadSessionId =
+      getLastWsPayloadSessionId() ?? getSessionIdForBay6Api()
+    const conversationId = getOrCreateConnect6ConversationId(payloadSessionId)
+    c6log("WS payload session_id / conversation_id", {
+      session_id: payloadSessionId,
+      bay6_rest_session_for_next_token: getBay6ServerSessionId(),
+      conversation_id: conversationId
+    })
+
     const payload = buildUserPayload(
-      sessionId,
+      payloadSessionId,
       messageContent,
       conversationId,
       clientCodeForPayload
@@ -640,18 +711,36 @@ export async function handleConnect6Chat(
   let wsEncrypt = isConnect6WsBay6Encrypt()
   let fullText = await runTurn(wsEncrypt)
 
-  if (CLOSING_MSG_RE.test(fullText.trim()) && wsEncrypt) {
+  if (isGatewayClosingMessage(fullText)) {
     c6log(
-      "Connect6: encrypted WS send got close message — retrying once with plain JSON (or set NEXT_PUBLIC_CONNECT6_WS_BAY6_ENCRYPT=false)."
+      "Connect6: WS rejected this send mode — retrying once with",
+      wsEncrypt ? "plain JSON" : "Bay6 encrypted wire",
+      "(toggle NEXT_PUBLIC_CONNECT6_WS_BAY6_ENCRYPT if you need a fixed mode)."
     )
     closeSharedSocket()
     rotateConnectionId()
-    fullText = await runTurn(false)
+    fullText = await runTurn(!wsEncrypt)
   }
 
-  if (CLOSING_MSG_RE.test(fullText.trim())) {
+  if (isGatewayClosingMessage(fullText)) {
+    c6log(
+      "Connect6: clearing stored session/conversation ids + reconnecting (Bay6 often ties tokens to session_id)."
+    )
+    resetConnect6BrowserSession()
+    closeSharedSocket()
+    wsEncrypt = isConnect6WsBay6Encrypt()
+    fullText = await runTurn(wsEncrypt)
+  }
+
+  if (isGatewayClosingMessage(fullText)) {
+    closeSharedSocket()
+    rotateConnectionId()
+    fullText = await runTurn(!wsEncrypt)
+  }
+
+  if (isGatewayClosingMessage(fullText)) {
     throw new Error(
-      'Connect6 rejected this session (reply: "Closing connection…"). Confirm access keys + NEXT_PUBLIC_CONNECT6_CLIENT_CODE match this Bay6 stack (HTTP/WSS hosts). If chat still fails, Bay6 may require encrypted REST (NEXT_PUBLIC_CONNECT6_BAY6_ENCRYPT=true) or different WS URL — check with them.'
+      'Connect6 rejected this session (reply: "Closing connection…"). Check NEXT_PUBLIC_CONNECT6_HTTP_BASE / WS host (connect6dev → wss://connect6-prodev.bay6.ai), access keys, and WS path client_code vs JSON client_code (DOXI path + DOX body per Angular). On dev, create-chat-session is skipped by default — try NEXT_PUBLIC_CONNECT6_CREATE_CHAT_SESSION=true if your stack requires it. REST/WS encryption: NEXT_PUBLIC_CONNECT6_BAY6_ENCRYPT + NEXT_PUBLIC_CONNECT6_WS_BAY6_ENCRYPT.'
     )
   }
 

@@ -2,6 +2,10 @@ import { Brand } from "@/components/ui/brand"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { SubmitButton } from "@/components/ui/submit-button"
+import {
+  connect6SkipsSupabaseAuth,
+  getConnect6PocWorkspaceId
+} from "@/lib/connect6/env"
 import { createClient } from "@/lib/supabase/server"
 import { createWorkspace, getHomeWorkspaceByUserId } from "@/db/workspaces"
 import { Database } from "@/supabase/types"
@@ -16,10 +20,16 @@ export const metadata: Metadata = {
 }
 
 export default async function Login({
+  params,
   searchParams
 }: {
+  params: { locale: string }
   searchParams: { message: string }
 }) {
+  if (connect6SkipsSupabaseAuth()) {
+    redirect(`/${params.locale}/${getConnect6PocWorkspaceId()}/chat`)
+  }
+
   const cookieStore = cookies()
   const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
